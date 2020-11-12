@@ -35,7 +35,7 @@ numModels <- function(K, P) {
 #' 
 #' @importFrom partitions setparts restrictedparts
 #' 
-#' @param x               scalar between 0 and 1 to evaluate posterior probability
+#' @param pi0             vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket.
 #' @param y               vector of responses
 #' @param n               vector of sample sizes
 #' @param P               integer giving maximum partition size; default is all partitions
@@ -53,9 +53,23 @@ numModels <- function(K, P) {
 #' 
 #' @export
 bma <- function( 
-  x, y, n, P = NULL, mu0 = 0.5, phi0 = 1,
-  priorModelProbs = NULL, alpha = 1
+  pi0, y, n, P = NULL, mu0 = 0.5, phi0 = 1,
+  priorModelProbs = NULL, alpha = 1,
+  numPostProbs = 0
   ) {
+  
+  if ( length(pi0) == 1 ) {
+    pi0 <- rep(pi0, times = length(y) )
+  }
+  
+  # if ( numPostProbs < 0 ) {
+  #   warning('numPostProbs must be a nonnegative integer. Defaulting to value of 0.')
+  #   numPostProbs <- 0
+  # }
+  # if ( numPostProbs %% 1 != 0 ) {
+  #   numPostProbs <- round(numPostProbs)
+  #   warning('numPostProbs must be an integer. Rounding down to the nearest integer.')
+  # }
   
   if ( length(y) != length(n) ) {
     stop('y and n must have equal length')
@@ -107,17 +121,14 @@ bma <- function(
   ## Create matrix of data
   datMat <- cbind( y, n-y )
   
-  ## compute sum( log choose (yk, nk) )
-  lchooseny <- sum(lchoose(n, y))
-  
   ## compute posterior model probabilities using C++ function
-  bma <- bma_cpp(
-    x, datMat, parts, mu0, phi0, lchooseny, log(priorModelProbs)
+  bma_res <- bma_cpp(
+    pi0, datMat, parts, mu0, phi0, log(priorModelProbs)
   )
-  ## change rownames of model probabilities to reflect which baskets are unique
-  modnames <- apply(parts + 1, 2, paste, collapse = "")
-  rownames(bma$postModelProbs) <- modnames
+  # ## change rownames of model probabilities to reflect which baskets are unique
+  # modnames                     <- apply(parts + 1, 2, paste, collapse = "")
+  # rownames(bma_res$postModelProbs) <- modnames
   
-  return(bma)
+  return(bma_res)
 }
 

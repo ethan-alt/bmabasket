@@ -18,27 +18,69 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// bma_cpp
-List bma_cpp(double    const& x, arma::mat const& datMat, arma::mat const& partitionMat, double    const& mu0, double    const& phi0, double    const& logchoose, arma::vec const& logModelPriors);
-RcppExport SEXP _bmabasket_bma_cpp(SEXP xSEXP, SEXP datMatSEXP, SEXP partitionMatSEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP logchooseSEXP, SEXP logModelPriorsSEXP) {
+// modelMatrix
+arma::mat modelMatrix(arma::mat const& datMat, arma::vec const& partition);
+RcppExport SEXP _bmabasket_modelMatrix(SEXP datMatSEXP, SEXP partitionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double    const& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
+    rcpp_result_gen = Rcpp::wrap(modelMatrix(datMat, partition));
+    return rcpp_result_gen;
+END_RCPP
+}
+// modelMatrix2
+arma::mat modelMatrix2(arma::mat const& datMat, arma::vec const& partition);
+RcppExport SEXP _bmabasket_modelMatrix2(SEXP datMatSEXP, SEXP partitionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
+    rcpp_result_gen = Rcpp::wrap(modelMatrix2(datMat, partition));
+    return rcpp_result_gen;
+END_RCPP
+}
+// logPostSurvProb
+List logPostSurvProb(arma::vec pi0, arma::mat const& datMat, arma::vec const& partition, double    const& a0, double    const& b0, double    const& lbeta_a0b0);
+RcppExport SEXP _bmabasket_logPostSurvProb(SEXP pi0SEXP, SEXP datMatSEXP, SEXP partitionSEXP, SEXP a0SEXP, SEXP b0SEXP, SEXP lbeta_a0b0SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
+    Rcpp::traits::input_parameter< double    const& >::type a0(a0SEXP);
+    Rcpp::traits::input_parameter< double    const& >::type b0(b0SEXP);
+    Rcpp::traits::input_parameter< double    const& >::type lbeta_a0b0(lbeta_a0b0SEXP);
+    rcpp_result_gen = Rcpp::wrap(logPostSurvProb(pi0, datMat, partition, a0, b0, lbeta_a0b0));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bma_cpp
+arma::vec bma_cpp(arma::vec const& pi0, arma::mat const& datMat, arma::mat const& partitionMat, double    const& mu0, double    const& phi0, arma::vec const& logModelPriors);
+RcppExport SEXP _bmabasket_bma_cpp(SEXP pi0SEXP, SEXP datMatSEXP, SEXP partitionMatSEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP logModelPriorsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec const& >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
     Rcpp::traits::input_parameter< arma::mat const& >::type partitionMat(partitionMatSEXP);
     Rcpp::traits::input_parameter< double    const& >::type mu0(mu0SEXP);
     Rcpp::traits::input_parameter< double    const& >::type phi0(phi0SEXP);
-    Rcpp::traits::input_parameter< double    const& >::type logchoose(logchooseSEXP);
     Rcpp::traits::input_parameter< arma::vec const& >::type logModelPriors(logModelPriorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(bma_cpp(x, datMat, partitionMat, mu0, phi0, logchoose, logModelPriors));
+    rcpp_result_gen = Rcpp::wrap(bma_cpp(pi0, datMat, partitionMat, mu0, phi0, logModelPriors));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bmabasket_numModels_cpp", (DL_FUNC) &_bmabasket_numModels_cpp, 2},
-    {"_bmabasket_bma_cpp", (DL_FUNC) &_bmabasket_bma_cpp, 7},
+    {"_bmabasket_modelMatrix", (DL_FUNC) &_bmabasket_modelMatrix, 2},
+    {"_bmabasket_modelMatrix2", (DL_FUNC) &_bmabasket_modelMatrix2, 2},
+    {"_bmabasket_logPostSurvProb", (DL_FUNC) &_bmabasket_logPostSurvProb, 6},
+    {"_bmabasket_bma_cpp", (DL_FUNC) &_bmabasket_bma_cpp, 6},
     {NULL, NULL, 0}
 };
 
