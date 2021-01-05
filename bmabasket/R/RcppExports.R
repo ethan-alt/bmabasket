@@ -15,32 +15,6 @@ numModels_cpp <- function(K, P) {
     .Call('_bmabasket_numModels_cpp', PACKAGE = 'bmabasket', K, P)
 }
 
-#' Model matrix of data given model
-#' 
-#' Get the (collapsed) model data specified by a particular partition (model)
-#' 
-#' @param datMat     matrix of \code{(y, n-y)} data
-#' @param partition  vector of indices giving how to partition the data
-#' 
-#' @keywords internal
-#' @noRd
-modelMatrix <- function(datMat, partition) {
-    .Call('_bmabasket_modelMatrix', PACKAGE = 'bmabasket', datMat, partition)
-}
-
-#' Model matrix of data given model
-#' 
-#' Get the (collapsed) model data specified by a particular partition (model)
-#' 
-#' @param datMat     matrix of \code{(y, n-y)} data
-#' @param partition  vector of indices giving how to partition the data
-#' 
-#' @keywords internal
-#' @noRd
-modelMatrix2 <- function(datMat, partition) {
-    .Call('_bmabasket_modelMatrix2', PACKAGE = 'bmabasket', datMat, partition)
-}
-
 #' Log posterior survival probability
 #' 
 #' Given a vector that gives a partition, computes the posterior probability 
@@ -51,11 +25,15 @@ modelMatrix2 <- function(datMat, partition) {
 #' @param partition  vector giving a partition for a particular model
 #' @param a0         beta prior shape parameter
 #' @param b0         beta prior shape parameter
-logPostSurvProb <- function(pi0, datMat, partition, a0, b0, lbeta_a0b0) {
-    .Call('_bmabasket_logPostSurvProb', PACKAGE = 'bmabasket', pi0, datMat, partition, a0, b0, lbeta_a0b0)
+#' @param lbeta_a0b0 scalar giving \code{lbeta(a0, b0)}
+#' 
+#' @return list giving posterior probability, mean, and numerator for model probability for given model.
+#' @noRd
+logPostProb <- function(pi0, datMat, partition, a0, b0, lbeta_a0b0) {
+    .Call('_bmabasket_logPostProb', PACKAGE = 'bmabasket', pi0, datMat, partition, a0, b0, lbeta_a0b0)
 }
 
-#' Bayesian model averaging
+#' Bayesian model averaging (C++ function)
 #'
 #' Computes posterior model probabilities and Bayes model averaged survival function \math{P(\pi_k > pi0 | D)}
 #'
@@ -66,10 +44,79 @@ logPostSurvProb <- function(pi0, datMat, partition, a0, b0, lbeta_a0b0) {
 #' @param phi0           scalar giving prior dispersion for beta prior
 #' @param logModelPriors vector of length P giving the normalized priors for each model
 #'
-#' @return a vector giving the Bayesian model averaged posterior probability
+#' @return a list giving posterior probability and posterior mean
 #' @keywords internal
 #' @noRd
 bma_cpp <- function(pi0, datMat, partitionMat, mu0, phi0, logModelPriors) {
     .Call('_bmabasket_bma_cpp', PACKAGE = 'bmabasket', pi0, datMat, partitionMat, mu0, phi0, logModelPriors)
+}
+
+#' Model matrix of data given model
+#'
+#' Get the (collapsed) model data specified by a particular partition (model)
+#'
+#' @param datMat     matrix of \code{(y, n-y)} data
+#' @param partition  vector of indices giving how to partition the data
+#' @return matrix giving partitioned data according to model
+#'
+#' @keywords internal
+#' @noRd
+collapseData <- function(datMat, partition) {
+    .Call('_bmabasket_collapseData', PACKAGE = 'bmabasket', datMat, partition)
+}
+
+#' Simulate basket data
+#'
+#' Simulate data from basket trial based on specified parameters
+#'
+#' @param K0 integer giving number of baskets
+#' @param I0 integer giving number of interim analyses
+#' @param targSSPer  target sample size increment for each basket
+#' @param rRates     \code{vector} of true response rates for each basket
+#' @param eScales    \code{vector} giving reciprocal of poisson process rate for each basket
+#' @param aParms     vector of length 2 giving normal mean and variance for time to outcome ascertainment
+#' 
+#' @return \code{matrix} giving simulated data from basket based on parameters
+#' @details Each column of the returning matrix is as follows:
+#' * y
+#' * b
+#' * et
+#' * at
+#' * ft
+#'
+#' @keywords internal
+#' @noRd
+simData <- function(K0, I0, targSSPer, rRates, eScales, aParms) {
+    .Call('_bmabasket_simData', PACKAGE = 'bmabasket', K0, I0, targSSPer, rRates, eScales, aParms)
+}
+
+#' Simulate a BMA design
+#'
+#' Simulates a BMA design given hyperparameters
+#'
+#' @param nSims number of simulation studies to be performed
+#' @param eRates \code{vector} of Poisson process rates for each basket
+#' @param rRates \code{vector} of true response rates for each basket
+#' @param aParms \code{vector} giving time to outcome ascertainment distribution parameters (common)
+#' @param ppEffCrit \code{vector} giving basket-specific posterior probability threshold for activity (i.e., efficacy)
+#' @param ppFutCrit \code{vector} giving basket-specific posterior probability threshold for futility
+#' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
+#' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
+#' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
+#' @param minSSFut minimum number of subjects in basket to assess futility
+#' @param minSSEff minimum number of subjects in basket to assess activity
+#' @param minSSEnr matrix giving minimum number of new subjects per basket before next analysis (each row is an interim analysis)
+#' @param targSSPer vector giving target sample size increment for each basket
+#' @param I0 maximum number of analyses
+#' @param mu0 prior mean for the response probabilities
+#' @param phi0 prior dispersion response probabilities
+#' @param partitionMat matrix giving partitions
+#' @param logModelPriors vector giving prior model probabilities
+#' 
+#' @return a list giving aspects of the simulation
+#' @keywords internal
+#' @noRd
+bma_design_cpp <- function(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs) {
+    .Call('_bmabasket_bma_design_cpp', PACKAGE = 'bmabasket', nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs)
 }
 

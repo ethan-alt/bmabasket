@@ -18,48 +18,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// modelMatrix
-arma::mat modelMatrix(arma::mat const& datMat, arma::vec const& partition);
-RcppExport SEXP _bmabasket_modelMatrix(SEXP datMatSEXP, SEXP partitionSEXP) {
+// logPostProb
+List logPostProb(arma::vec const& pi0, arma::mat const& datMat, arma::vec const& partition, double    const& a0, double    const& b0, double    const& lbeta_a0b0);
+RcppExport SEXP _bmabasket_logPostProb(SEXP pi0SEXP, SEXP datMatSEXP, SEXP partitionSEXP, SEXP a0SEXP, SEXP b0SEXP, SEXP lbeta_a0b0SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
-    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
-    rcpp_result_gen = Rcpp::wrap(modelMatrix(datMat, partition));
-    return rcpp_result_gen;
-END_RCPP
-}
-// modelMatrix2
-arma::mat modelMatrix2(arma::mat const& datMat, arma::vec const& partition);
-RcppExport SEXP _bmabasket_modelMatrix2(SEXP datMatSEXP, SEXP partitionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
-    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
-    rcpp_result_gen = Rcpp::wrap(modelMatrix2(datMat, partition));
-    return rcpp_result_gen;
-END_RCPP
-}
-// logPostSurvProb
-List logPostSurvProb(arma::vec pi0, arma::mat const& datMat, arma::vec const& partition, double    const& a0, double    const& b0, double    const& lbeta_a0b0);
-RcppExport SEXP _bmabasket_logPostSurvProb(SEXP pi0SEXP, SEXP datMatSEXP, SEXP partitionSEXP, SEXP a0SEXP, SEXP b0SEXP, SEXP lbeta_a0b0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type pi0(pi0SEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type pi0(pi0SEXP);
     Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
     Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
     Rcpp::traits::input_parameter< double    const& >::type a0(a0SEXP);
     Rcpp::traits::input_parameter< double    const& >::type b0(b0SEXP);
     Rcpp::traits::input_parameter< double    const& >::type lbeta_a0b0(lbeta_a0b0SEXP);
-    rcpp_result_gen = Rcpp::wrap(logPostSurvProb(pi0, datMat, partition, a0, b0, lbeta_a0b0));
+    rcpp_result_gen = Rcpp::wrap(logPostProb(pi0, datMat, partition, a0, b0, lbeta_a0b0));
     return rcpp_result_gen;
 END_RCPP
 }
 // bma_cpp
-arma::vec bma_cpp(arma::vec const& pi0, arma::mat const& datMat, arma::mat const& partitionMat, double    const& mu0, double    const& phi0, arma::vec const& logModelPriors);
+Rcpp::List bma_cpp(arma::vec const& pi0, arma::mat const& datMat, arma::mat const& partitionMat, double    const& mu0, double    const& phi0, arma::vec const& logModelPriors);
 RcppExport SEXP _bmabasket_bma_cpp(SEXP pi0SEXP, SEXP datMatSEXP, SEXP partitionMatSEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP logModelPriorsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -74,13 +50,71 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// collapseData
+arma::mat collapseData(arma::mat const& datMat, arma::vec const& partition);
+RcppExport SEXP _bmabasket_collapseData(SEXP datMatSEXP, SEXP partitionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
+    rcpp_result_gen = Rcpp::wrap(collapseData(datMat, partition));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simData
+arma::mat simData(int        const& K0, int        const& I0, arma::ivec const& targSSPer, arma::vec  const& rRates, arma::vec  const& eScales, arma::vec  const& aParms);
+RcppExport SEXP _bmabasket_simData(SEXP K0SEXP, SEXP I0SEXP, SEXP targSSPerSEXP, SEXP rRatesSEXP, SEXP eScalesSEXP, SEXP aParmsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int        const& >::type K0(K0SEXP);
+    Rcpp::traits::input_parameter< int        const& >::type I0(I0SEXP);
+    Rcpp::traits::input_parameter< arma::ivec const& >::type targSSPer(targSSPerSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRates(rRatesSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type eScales(eScalesSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type aParms(aParmsSEXP);
+    rcpp_result_gen = Rcpp::wrap(simData(K0, I0, targSSPer, rRates, eScales, aParms));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bma_design_cpp
+Rcpp::List bma_design_cpp(int        const& nSims, arma::vec  const& eRates, arma::vec  const& rRates, arma::vec  const& aParms, arma::vec  const& ppEffCrit, arma::vec  const& ppFutCrit, int        const& futOnly, arma::vec  const& rRatesNull, arma::vec  const& rRatesAlt, int        const& minSSFut, int        const& minSSEff, arma::imat const& minSSEnr, arma::imat const& maxSSEnr, arma::ivec const& targSSPer, int        const& I0, double     const& mu0, double     const& phi0, arma::mat  const& models, arma::vec  const& logPriorModelProbs);
+RcppExport SEXP _bmabasket_bma_design_cpp(SEXP nSimsSEXP, SEXP eRatesSEXP, SEXP rRatesSEXP, SEXP aParmsSEXP, SEXP ppEffCritSEXP, SEXP ppFutCritSEXP, SEXP futOnlySEXP, SEXP rRatesNullSEXP, SEXP rRatesAltSEXP, SEXP minSSFutSEXP, SEXP minSSEffSEXP, SEXP minSSEnrSEXP, SEXP maxSSEnrSEXP, SEXP targSSPerSEXP, SEXP I0SEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP modelsSEXP, SEXP logPriorModelProbsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int        const& >::type nSims(nSimsSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type eRates(eRatesSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRates(rRatesSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type aParms(aParmsSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type ppEffCrit(ppEffCritSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type ppFutCrit(ppFutCritSEXP);
+    Rcpp::traits::input_parameter< int        const& >::type futOnly(futOnlySEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesNull(rRatesNullSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesAlt(rRatesAltSEXP);
+    Rcpp::traits::input_parameter< int        const& >::type minSSFut(minSSFutSEXP);
+    Rcpp::traits::input_parameter< int        const& >::type minSSEff(minSSEffSEXP);
+    Rcpp::traits::input_parameter< arma::imat const& >::type minSSEnr(minSSEnrSEXP);
+    Rcpp::traits::input_parameter< arma::imat const& >::type maxSSEnr(maxSSEnrSEXP);
+    Rcpp::traits::input_parameter< arma::ivec const& >::type targSSPer(targSSPerSEXP);
+    Rcpp::traits::input_parameter< int        const& >::type I0(I0SEXP);
+    Rcpp::traits::input_parameter< double     const& >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< double     const& >::type phi0(phi0SEXP);
+    Rcpp::traits::input_parameter< arma::mat  const& >::type models(modelsSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type logPriorModelProbs(logPriorModelProbsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bma_design_cpp(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_bmabasket_numModels_cpp", (DL_FUNC) &_bmabasket_numModels_cpp, 2},
-    {"_bmabasket_modelMatrix", (DL_FUNC) &_bmabasket_modelMatrix, 2},
-    {"_bmabasket_modelMatrix2", (DL_FUNC) &_bmabasket_modelMatrix2, 2},
-    {"_bmabasket_logPostSurvProb", (DL_FUNC) &_bmabasket_logPostSurvProb, 6},
+    {"_bmabasket_logPostProb", (DL_FUNC) &_bmabasket_logPostProb, 6},
     {"_bmabasket_bma_cpp", (DL_FUNC) &_bmabasket_bma_cpp, 6},
+    {"_bmabasket_collapseData", (DL_FUNC) &_bmabasket_collapseData, 2},
+    {"_bmabasket_simData", (DL_FUNC) &_bmabasket_simData, 6},
+    {"_bmabasket_bma_design_cpp", (DL_FUNC) &_bmabasket_bma_design_cpp, 19},
     {NULL, NULL, 0}
 };
 

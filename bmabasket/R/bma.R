@@ -41,8 +41,8 @@ numModels <- function(K, P) {
 #' @param P               integer giving maximum partition size; default is all partitions
 #' @param mu0             prior mean for beta prior
 #' @param phi0            prior dispersion for beta prior
-#' @param priorModelProbs vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power alpha
-#' @param alpha           nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.
+#' @param priorModelProbs vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power pmp0
+#' @param pmp0           nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.
 #' 
 #' @examples
 #' ## Simulate data with 3 baskets
@@ -54,22 +54,12 @@ numModels <- function(K, P) {
 #' @export
 bma <- function( 
   pi0, y, n, P = NULL, mu0 = 0.5, phi0 = 1,
-  priorModelProbs = NULL, alpha = 1,
-  numPostProbs = 0
+  priorModelProbs = NULL, pmp0 = 1
   ) {
   
   if ( length(pi0) == 1 ) {
     pi0 <- rep(pi0, times = length(y) )
   }
-  
-  # if ( numPostProbs < 0 ) {
-  #   warning('numPostProbs must be a nonnegative integer. Defaulting to value of 0.')
-  #   numPostProbs <- 0
-  # }
-  # if ( numPostProbs %% 1 != 0 ) {
-  #   numPostProbs <- round(numPostProbs)
-  #   warning('numPostProbs must be an integer. Rounding down to the nearest integer.')
-  # }
   
   if ( length(y) != length(n) ) {
     stop('y and n must have equal length')
@@ -101,10 +91,10 @@ bma <- function(
   parts <- as.matrix( setparts( restrictedparts(K, P) ) ) - 1 ## -1 for c++ indexing
   J     <- ncol(parts)
     
-  ## default prior model prob is # sets in partition ^ alpha
+  ## default prior model prob is # sets in partition ^ pmp0
   if ( is.null(priorModelProbs ) ) {
     priorModelProbs <- do.call('pmax', c(as.data.frame(t(parts)),na.rm=TRUE) ) + 1
-    priorModelProbs <- priorModelProbs^alpha
+    priorModelProbs <- priorModelProbs^pmp0
     priorModelProbs <- priorModelProbs / sum(priorModelProbs)
   }
   
@@ -121,14 +111,7 @@ bma <- function(
   ## Create matrix of data
   datMat <- cbind( y, n-y )
   
-  ## compute posterior model probabilities using C++ function
-  bma_res <- bma_cpp(
-    pi0, datMat, parts, mu0, phi0, log(priorModelProbs)
-  )
-  # ## change rownames of model probabilities to reflect which baskets are unique
-  # modnames                     <- apply(parts + 1, 2, paste, collapse = "")
-  # rownames(bma_res$postModelProbs) <- modnames
-  
-  return(bma_res)
+  ## Return C++ function
+  bma_cpp(pi0, datMat, parts, mu0, phi0, log(priorModelProbs))
 }
 

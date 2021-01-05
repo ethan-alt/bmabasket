@@ -4,10 +4,10 @@
 \alias{bma}
 \title{Compute posterior model probabilities}
 \usage{
-bma(x, y, n, P = NULL, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, alpha = 1)
+bma(pi0, y, n, P = NULL, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, pmp0 = 1)
 }
 \arguments{
-\item{x}{scalar between 0 and 1 to evaluate posterior probability}
+\item{pi0}{vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket.}
 
 \item{y}{vector of responses}
 
@@ -19,9 +19,9 @@ bma(x, y, n, P = NULL, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, alpha = 1)
 
 \item{phi0}{prior dispersion for beta prior}
 
-\item{priorModelProbs}{vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power alpha}
+\item{priorModelProbs}{vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power pmp0}
 
-\item{alpha}{nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.}
+\item{pmp0}{nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.}
 }
 \description{
 Given data and hyperparameters, computes posterior model probabilities
