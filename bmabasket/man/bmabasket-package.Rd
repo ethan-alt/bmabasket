@@ -6,8 +6,10 @@
 \alias{bmabasket-package}
 \title{bmabasket: Bayesian model averaging for basket trials}
 \description{
-Implementation of the Bayesian model average method of
-             Psioda et al. (2019) <doi:10.1093/biostatistics/kxz014>.
+An implementation of the Bayesian model averaging method 
+    of Psioda et al. (2019) <doi:10.1093/biostatistics/kxz014> for basket trials. 
+    Contains a user-friendly wrapper for simulating basket trials under conditions 
+    and analyzing them with a Bayesian model averaging approach.
 }
 \seealso{
 Useful links:

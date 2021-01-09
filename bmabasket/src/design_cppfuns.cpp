@@ -5,37 +5,33 @@
 
 using namespace Rcpp;
 
-//' Model matrix of data given model
+//' Get collapsed data based on model
 //'
 //' Get the (collapsed) model data specified by a particular partition (model)
 //'
-//' @param datMat     matrix of \code{(y, n-y)} data
-//' @param partition  vector of indices giving how to partition the data
+//' @param yMat     matrix of \code{(y, n-y)} data
+//' @param model  vector of indices giving how to partition the data
 //' @return matrix giving partitioned data according to model
 //'
 //' @keywords internal
 //' @noRd
 // [[Rcpp::export]]
 arma::mat collapseData(
-    arma::mat const& datMat,
-    arma::vec const& partition
+    arma::mat const& yMat,
+    arma::vec const& model
 ) {
-  // max index = # of elements of list
-  int m = partition.max() + 1;
-
-  // initialize matrix for results
-  arma::mat partMat = arma::mat( datMat.n_rows, datMat.n_cols, arma::fill::zeros );
-
-  for ( int i = 0; i < m; i++ ) {
-    arma::uvec   rowIndx  = arma::find(partition == i);
-    arma::rowvec partSum  = arma::sum( datMat.rows( rowIndx ) );
-    for ( unsigned int j = 0; j < rowIndx.size(); j++ ) {
-      partMat.row(rowIndx(j)) = partSum;
-    }
+  int D0 = max(model) + 1;                 // number of distinct parameters;
+  arma::mat y(D0, 2, arma::fill::zeros);   // create container for compressed data;
+  
+  // put data into compressed buckets;
+  for ( unsigned int k = 0; k < yMat.n_cols; k++ )
+  {
+    int d   = model[k];
+    y(d,0) += yMat(0,k);
+    y(d,1) += yMat(1,k);				
   }
-  return partMat;
+  return y;
 }
-
 
 
 
@@ -159,10 +155,9 @@ Rcpp::List bma_design_cpp (
     double     const& mu0, 
     double     const& phi0,
     arma::mat  const& models,
-    arma::vec  const& logPriorModelProbs
+    arma::rowvec  const& logPriorModelProbs
 )
 {
-  
   // initialize random number generator;
   RNGScope scope;    
   
@@ -170,8 +165,7 @@ Rcpp::List bma_design_cpp (
   int K0 = eRates.size();
   
   // calculate number of models and number of distinct parms
-  int M0                    = models.n_cols;              // number of models
-  arma::vec nDistinctParms  = arma::max( models, 0 ) + 1; // number of distinct parms in each model
+  int M0 = models.n_cols;              // number of models
   
   // calculate enrollment distrution scale parameters;
   arma::vec eScales = 1.0 / eRates;
@@ -307,12 +301,10 @@ Rcpp::List bma_design_cpp (
       // update total number of subjects
       nStart += idx2;
       
-      
-      
       //-----------------------------
       // BMA model fitting section;
       //-----------------------------
-      arma::rowvec ppModel = logPriorModelProbs;         // container for posterior model probability container; 
+      arma::rowvec ppModel = logPriorModelProbs;          // container for posterior model probability container; 
       
       arma::mat     pp(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for efficacy;
       arma::mat pp_mid(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for futility;				
@@ -355,6 +347,7 @@ Rcpp::List bma_design_cpp (
       basket_specific_mn     = ppModel * mn;
       
       int prev_active = sum(active);
+
       for (int k = 0; k < K0; k++)
       {
         int eval_crit_met =    (nVec[k] >= minSSEff) 
@@ -503,88 +496,3 @@ Rcpp::List bma_design_cpp (
     Rcpp::Named("early.stopping")        = SP								  			  
   );
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// 
-// 
-// // function to reconstruct data s.t. constraints at interim
-// // [[Rcpp::export]]
-// List reconstruct_data(
-//     const arma::mat&     bData,
-//     const arma::rowvec&  minSSEnr_i,
-//     const arma::rowvec&  maxSSEnr_i,
-//     const arma::irowvec& active,
-//     const int&           K0,
-//     const int&           nStart,
-//     const int&           nMax,
-//     const int&           numAdd_i
-// ) {
-//   
-//   // initialize result
-//   arma::mat datMat(K0, 2);    // stores (y, n-y)
-//   
-//   // find the number of subjects needed to meet requirements on minimum enrollment
-//   // without exceeding requirements on maximum enrollment;
-//   arma::rowvec nAcc(K0,arma::fill::zeros);
-//   arma::rowvec nMinCritMet(K0,arma::fill::zeros);
-//   arma::rowvec nMaxCritMet(K0,arma::fill::zeros);
-//   for ( int k = 0; k < K0; k++ ) {
-//     if ( minSSEnr_i(k) == 0) { 
-//       nMinCritMet(k) = 1; 
-//     }
-//   }
-//   double duration = 0.0;   // will end up being max duration of selected obs.
-//   int idx2 = 0;
-//   for (int n = nStart; n < nMax; n++) {
-//     int b = bData(n, 1);
-//     int y = bData(n, 0);
-//     
-//     if (active(b) == 1 and nMaxCritMet(b) == 0) {
-//       nAcc(b) +=1;
-//       if ( nAcc(b) >= minSSEnr_i(b) ) { 
-//         nMinCritMet(b) = 1; 
-//       }
-//       if ( nAcc(b) >= maxSSEnr_i(b) ) { 
-//         nMaxCritMet(b) = 1; 
-//       }
-//       datMat(b,1-y)   += 1;            // if y = 1, adds to first column of datMat, otherwise adds to second column
-//       duration         = bData(n,4);   // = ft						
-//       
-//       if ( (sum(nAcc) >= numAdd_i) and (sum(nMinCritMet) == sum(active)) ) {
-//         n = nMax + 100;
-//       }
-//     }	
-//     idx2++;
-//   }
-//   
-//   // store number of added observations for each basket
-//   arma::vec nVec_add = arma::sum(datMat, 1);   
-//   
-//   List res = List::create(
-//     _["datMat"]   = datMat,     // collapsed data matrix
-//     _["idx2"]     = idx2,       // to update total number of subjects
-//     _["nVec_add"] = nVec_add,   // number of additional patients in this analysis
-//     _["duration"] = duration    // max duration (ft)
-//   );
-//   return res;
-// }

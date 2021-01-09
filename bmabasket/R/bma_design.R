@@ -31,7 +31,7 @@ check_var <- function(
   if(!is.null(lower)) {
     check <- ifelse(lower.strict, any(var < lower), any(var <= lower))
     if ( check ) {
-      msg   <- ifelse(lower.strict, 'greater than', 'greater than or equal to')
+      msg   <- ifelse(lower.strict, 'greater than or equal to', 'greater than')
       stop( paste( varname, 'must be', msg, lower.name ) )
     }
   }
@@ -39,7 +39,7 @@ check_var <- function(
   if(!is.null(upper)) {
     check <- ifelse(upper.strict, any(var > upper), any(var >= upper))
     if ( check ) {
-      msg   <- ifelse(upper.strict, 'less than', 'less than or equal to')
+      msg   <- ifelse(upper.strict, 'less than or equal to', 'less than')
       stop( paste( varname, 'must be', msg, upper.name ) )
     }
   }
@@ -62,14 +62,12 @@ bma_design_checks <- function(
   check_var(eRates, 'eRates', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = FALSE)
   check_var(rRates, 'rRates', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = FALSE)
   check_var(meanTime, 'meanTime', length = 1)
-  check_var(sdTime, 'sdTime', length = 1, lower = 0, lower.strict = TRUE)
+  check_var(sdTime, 'sdTime', length = 1, lower = 0, lower.strict = FALSE)
   
   if ( !is.logical(futOnly) ) {
     stop('futOnly must be TRUE or FALSE')
   }
-  if ( !futOnly ) {
-    check_var(ppEffCrit, 'ppEffCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
-  }
+  check_var(ppEffCrit, 'ppEffCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(ppFutCrit, 'ppFutCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(rRatesNull, 'rRatesNull', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(rRatesAlt, 'rRatesAlt', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
@@ -84,9 +82,14 @@ bma_design_checks <- function(
   if ( ( nrow(maxSSEnr) != I0 ) | (ncol(maxSSEnr) != nBaskets ) ) {
     stop('maxSSEnr must be a matrix with I0 rows and nBaskets columns')
   }
-  check_var(targSSPer, 'targSSPer', length = nBaskets, length.name = 'nBaskets', lower = 1, lower.strict = TRUE, int = TRUE)
-  check_var(mu0, 'mu0', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = FALSE, upper = 1, upper.strict = FALSE)
-  check_var(phi0, 'phi0', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = FALSE)
+  
+  if ( any(minSSEnr > maxSSEnr) ) {
+    stop('Each element of minSSEnr must be less than or equal to maxSSEnr')
+  }
+  
+  check_var(targSSPer, 'targSSPer', length = I0, length.name = 'I0', lower = 1, lower.strict = TRUE, int = TRUE)
+  check_var(mu0, 'mu0', length = 1, lower = 0, lower.strict = FALSE, upper = 1, upper.strict = FALSE)
+  check_var(phi0, 'phi0', length = 1, lower = 0, lower.strict = FALSE)
   if (!is.null(pmp0)) {
     check_var(pmp0, 'pmp0', lower = 0, lower.strict = TRUE)
   }
@@ -109,7 +112,7 @@ bma_design_checks <- function(
 #' @param rRates scalar or vector of true response rates for each basket
 #' @param meanTime mean parameter for time to outcome ascertainment
 #' @param sdTime standard deviation parameter for time to outcome ascertainment
-#' @param ppEffCrit scalar or vector giving basket-specific posterior probability threshold for activity (i.e., efficacy). Must be specified if \code{futOnly==FALSE}
+#' @param ppEffCrit scalar or vector giving basket-specific posterior probability threshold for activity (i.e., efficacy).
 #' @param ppFutCrit scalar or vector giving basket-specific posterior probability threshold for futility
 #' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
 #' @param rRatesNull scalar or vector of basket-specific null hypothesis values (for efficacy determination)
@@ -122,19 +125,87 @@ bma_design_checks <- function(
 #' @param I0 maximum number of analyses
 #' @param mu0 prior mean for the response probabilities
 #' @param phi0 prior dispersion response probabilities
-#' @param priorModelProbs vector giving prior probabilities for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power \code{pmp0}
+#' @param priorModelProbs vector giving prior probabilities for models. Default is prior of each model is proportional \code{exp(pmp0 * D)} where \code{D} is the number of distinct parameters in the model
 #' @param pmp0 scalar giving power for \code{priorModelProbs}. If \code{pmp0==0}, a uniform prior is used for model probabilities. Defaults to 1. Ignored if \code{priorModelProbs} is not \code{NULL}
 #' 
-#' @return a list giving aspects of the simulation
+#' @return a nested list giving results of the simulation with the following structure:
+#' * **hypothesis.testing**       - description
+#'   - **rr**                     - description
+#'   - **fw.fpr**                 - description
+#'   - **nerr**                   - description
+#'   - **fut**                    - description
+#' * **sample.size**              - description
+#'   - **basket.ave**             - description
+#'   - **basket.med**             - description
+#'   - **basket.min**             - description
+#'   - **basket.max**             - description
+#'   - **overall.ave**            - description
+#' * **point.estimation**         - description
+#'   - **PM.ave**                 - description
+#'   - **SP.ave**                 - description
+#'   - **PP.ave**                 - description
+#'   - **bias**                   - description
+#'   - **mse**                    - description
+#' * **early.stopping**           - description
+#'   - **interm.stop.prob**       - description
+#'   - **baskets.continuing.ave** - description
+#' 
+#' @examples
+#' ## SIMULATE DATA AND SET SIMULATION PARAMS
+#' nSims      <- 100             ## would be much more in practice                     
+#' meanTime   <- 0.01
+#' sdTime     <- 0.0000000001
+#' mu0        <- 0.45
+#' phi0       <- 1.00
+#' ppEffCrit  <- 0.985
+#' ppFutCrit  <- 0.2750
+#' pmp0       <- 2
+#' n1         <- 7
+#' n2         <- 16
+#' targSSPer  <- c(n1, n2)
+#' nInterim   <- 2
+#' futOnly    <- 1
+#' K0         <- 5
+#' row        <- 0
+#' mss        <- 4
+#' minSSFut   <- mss  ## minimum number of subjects in basket to assess futility using BMA
+#' minSSEff   <- mss  ## minimum number of subjects in basket to assess activity using BMA
+#' rTarg      <- 0.45
+#' rNull      <- 0.15
+#' rRatesMod  <- matrix(rNull,(K0+1)+3,K0)
+#' rRatesNull <- rep(rNull,K0)
+#' rRatesMid  <- rep(rTarg,K0)
+#' eRatesMod  <- rep(1, K0)
+#' 
+#' ## min and max #' of new subjects per basket before next analysis (each row is interim)
+#' minSSEnr <- matrix(rep(mss, K0), nrow=nInterim ,ncol=K0, byrow=TRUE) 
+#' maxSSEnr <- matrix(rep(100, K0), nrow=nInterim, ncol=K0, byrow=TRUE) 
+#' 
+#' ## construct matrix of rates
+#' for (i in 1:K0)  
+#' {
+#'   rRatesMod[(i+1):(K0+1),i]= rTarg     
+#' }
+#' rRatesMod[(K0+2),] <- c(0.05,0.15,0.25,0.35,0.45)
+#' rRatesMod[(K0+3),] <- c(0.15,0.30,0.30,0.30,0.45)
+#' rRatesMod[(K0+4),] <- c(0.15,0.15,0.30,0.30,0.30)
+#' 
+#' ## conduct simulation of trial data and analysis
+#' x <- bma_design(
+#'   nSims, K0, K0, eRatesMod, rRatesMod[i+1,], meanTime, sdTime, 
+#'   ppEffCrit, ppFutCrit, as.logical(futOnly), rRatesNull, rRatesMid, 
+#'   minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, nInterim, mu0, 
+#'   phi0, priorModelProbs = NULL, pmp0 = pmp0
+#' )
 #' @export
 bma_design <- function(
-  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit = NULL, ppFutCrit, futOnly = FALSE, rRatesNull, rRatesAlt, minSSFut,
+  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, rRatesNull, rRatesAlt, minSSFut,
   minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, pmp0 = 1
 ) {
   
   ## Perform initial checks
   check_var(nBaskets, 'nBaskets', length = 1, lower = 1, lower.strict = TRUE, int = TRUE)
-  check_var(maxDistinct, 'nBaskets', length = 1, lower = 1, lower.strict = TRUE, upper = nBaskets, upper.strict = TRUE, upper.name = 'nBaskets')
+  check_var(maxDistinct, 'maxDistinct', length = 1, lower = 1, lower.strict = TRUE, upper = nBaskets, upper.strict = TRUE, upper.name = 'nBaskets')
   
   ## Compute matrix of models
   models  <- as.matrix( setparts( restrictedparts(nBaskets, maxDistinct) ) ) - 1  ## -1 for c++ indexing
@@ -157,33 +228,26 @@ bma_design <- function(
   ppFutCrit  <- scalar_to_vector(ppFutCrit, 'ppFutCrit', nBaskets, 'nBaskets')
   rRatesNull <- scalar_to_vector(rRatesNull, 'rRatesNull', nBaskets, 'nBaskets')
   rRatesAlt  <- scalar_to_vector(rRatesAlt, 'rRatesAlt', nBaskets, 'nBaskets')
-  targSSPer  <- scalar_to_vector(targSSPer, 'targSSPer', nBaskets, 'nBaskets')
-  
-  ## Default value for futOnly == TRUE--ignored in code, but must be specified for c++ function to work.
-  if ( futOnly ) {
-    ppEffCrit <- rep(0.5, nBaskets)
-  }
+  targSSPer  <- scalar_to_vector(targSSPer, 'targSSPer', I0, 'I0')
   
   ## Perform checks
   bma_design_checks(
-    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, 
-    ppFutCrit, futOnly = FALSE, rRatesNull, rRatesAlt, minSSFut,
-    minSSEff, minSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
+    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut,
+    minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
   )
   
   ## construct aparms
   aParms = c(meanTime, sdTime)
   
-  ## default prior model prob is # sets in partition ^ pmp0
+  ## default prior model prob is exp( pmp0 * # distinct params in model )
   if ( is.null(priorModelProbs ) ) {
     priorModelProbs <- do.call('pmax', c(as.data.frame(t(models)), na.rm=TRUE) ) + 1   ## gives number distinct params for each model
-    priorModelProbs <- priorModelProbs^pmp0
+    priorModelProbs <- exp(pmp0 * priorModelProbs)
     priorModelProbs <- priorModelProbs / sum(priorModelProbs)
   }
   
   ## Check if prior probabilities sum to 1; normalize otherwise
   if ( sum(priorModelProbs) != 1 ) {
-    warning('Normalizing priorModelProbs because elements did not sum to 1')
     priorModelProbs = priorModelProbs / sum(priorModelProbs)
   }
   priorModelProbs <- log( priorModelProbs )    ## convert to log probabilities
@@ -191,7 +255,7 @@ bma_design <- function(
   ## Call C++ function
   bma_design_cpp(
     nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, 
-    futOnly, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
+    as.integer(futOnly), rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
     targSSPer, I0, mu0, phi0, models, priorModelProbs
   )
 }

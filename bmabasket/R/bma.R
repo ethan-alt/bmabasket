@@ -35,14 +35,21 @@ numModels <- function(K, P) {
 #' 
 #' @importFrom partitions setparts restrictedparts
 #' 
-#' @param pi0             vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket.
+#' @param pi0             scalar or vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket
 #' @param y               vector of responses
 #' @param n               vector of sample sizes
-#' @param P               integer giving maximum partition size; default is all partitions
+#' @param P               integer giving maximum number of distinct parameters; default is all possible models
 #' @param mu0             prior mean for beta prior
 #' @param phi0            prior dispersion for beta prior
-#' @param priorModelProbs vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power pmp0
-#' @param pmp0           nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.
+#' @param priorModelProbs (optional) vector giving prior for models. Default is proportional to \code{exp(pmp0 * D)}, where \code{D} is the number of distinct parameters in the model
+#' @param pmp0            nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified
+#' 
+#' @return a list with the following structure:
+#' 
+#' \describe{
+#'   \item{bmaProbs}{model-averaged probabilities that each basket is larger than \code{pi0}}
+#'   \item{bmaMeans}{model-averaged posterior mean for each basket}
+#' }
 #' 
 #' @examples
 #' ## Simulate data with 3 baskets
@@ -94,7 +101,7 @@ bma <- function(
   ## default prior model prob is # sets in partition ^ pmp0
   if ( is.null(priorModelProbs ) ) {
     priorModelProbs <- do.call('pmax', c(as.data.frame(t(parts)),na.rm=TRUE) ) + 1
-    priorModelProbs <- priorModelProbs^pmp0
+    priorModelProbs <- exp(pmp0 * priorModelProbs)
     priorModelProbs <- priorModelProbs / sum(priorModelProbs)
   }
   

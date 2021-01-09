@@ -51,18 +51,18 @@ bma_cpp <- function(pi0, datMat, partitionMat, mu0, phi0, logModelPriors) {
     .Call('_bmabasket_bma_cpp', PACKAGE = 'bmabasket', pi0, datMat, partitionMat, mu0, phi0, logModelPriors)
 }
 
-#' Model matrix of data given model
+#' Get collapsed data based on model
 #'
 #' Get the (collapsed) model data specified by a particular partition (model)
 #'
-#' @param datMat     matrix of \code{(y, n-y)} data
-#' @param partition  vector of indices giving how to partition the data
+#' @param yMat     matrix of \code{(y, n-y)} data
+#' @param model  vector of indices giving how to partition the data
 #' @return matrix giving partitioned data according to model
 #'
 #' @keywords internal
 #' @noRd
-collapseData <- function(datMat, partition) {
-    .Call('_bmabasket_collapseData', PACKAGE = 'bmabasket', datMat, partition)
+collapseData <- function(yMat, model) {
+    .Call('_bmabasket_collapseData', PACKAGE = 'bmabasket', yMat, model)
 }
 
 #' Simulate basket data

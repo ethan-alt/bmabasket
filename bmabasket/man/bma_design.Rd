@@ -12,7 +12,7 @@ bma_design(
   rRates,
   meanTime,
   sdTime,
-  ppEffCrit = NULL,
+  ppEffCrit,
   ppFutCrit,
   futOnly = FALSE,
   rRatesNull,
@@ -44,7 +44,7 @@ bma_design(
 
 \item{sdTime}{standard deviation parameter for time to outcome ascertainment}
 
-\item{ppEffCrit}{scalar or vector giving basket-specific posterior probability threshold for activity (i.e., efficacy). Must be specified if \code{futOnly==FALSE}}
+\item{ppEffCrit}{scalar or vector giving basket-specific posterior probability threshold for activity (i.e., efficacy).}
 
 \item{ppFutCrit}{scalar or vector giving basket-specific posterior probability threshold for futility}
 
@@ -70,13 +70,91 @@ bma_design(
 
 \item{phi0}{prior dispersion response probabilities}
 
-\item{priorModelProbs}{vector giving prior probabilities for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power \code{pmp0}}
+\item{priorModelProbs}{vector giving prior probabilities for models. Default is prior of each model is proportional \code{exp(pmp0 * D)} where \code{D} is the number of distinct parameters in the model}
 
 \item{pmp0}{scalar giving power for \code{priorModelProbs}. If \code{pmp0==0}, a uniform prior is used for model probabilities. Defaults to 1. Ignored if \code{priorModelProbs} is not \code{NULL}}
 }
 \value{
-a list giving aspects of the simulation
+a nested list giving results of the simulation with the following structure:
+\itemize{
+\item \strong{hypothesis.testing}       - description
+\itemize{
+\item \strong{rr}                     - description
+\item \strong{fw.fpr}                 - description
+\item \strong{nerr}                   - description
+\item \strong{fut}                    - description
+}
+\item \strong{sample.size}              - description
+\itemize{
+\item \strong{basket.ave}             - description
+\item \strong{basket.med}             - description
+\item \strong{basket.min}             - description
+\item \strong{basket.max}             - description
+\item \strong{overall.ave}            - description
+}
+\item \strong{point.estimation}         - description
+\itemize{
+\item \strong{PM.ave}                 - description
+\item \strong{SP.ave}                 - description
+\item \strong{PP.ave}                 - description
+\item \strong{bias}                   - description
+\item \strong{mse}                    - description
+}
+\item \strong{early.stopping}           - description
+\itemize{
+\item \strong{interm.stop.prob}       - description
+\item \strong{baskets.continuing.ave} - description
+}
+}
 }
 \description{
 Simulates a BMA design given hyperparameters
+}
+\examples{
+## SIMULATE DATA AND SET SIMULATION PARAMS
+nSims      <- 100             ## would be much more in practice                     
+meanTime   <- 0.01
+sdTime     <- 0.0000000001
+mu0        <- 0.45
+phi0       <- 1.00
+ppEffCrit  <- 0.985
+ppFutCrit  <- 0.2750
+pmp0       <- 2
+n1         <- 7
+n2         <- 16
+targSSPer  <- c(n1, n2)
+nInterim   <- 2
+futOnly    <- 1
+K0         <- 5
+row        <- 0
+mss        <- 4
+minSSFut   <- mss  ## minimum number of subjects in basket to assess futility using BMA
+minSSEff   <- mss  ## minimum number of subjects in basket to assess activity using BMA
+rTarg      <- 0.45
+rNull      <- 0.15
+rRatesMod  <- matrix(rNull,(K0+1)+3,K0)
+rRatesNull <- rep(rNull,K0)
+rRatesMid  <- rep(rTarg,K0)
+eRatesMod  <- rep(1, K0)
+
+## min and max #' of new subjects per basket before next analysis (each row is interim)
+minSSEnr <- matrix(rep(mss, K0), nrow=nInterim ,ncol=K0, byrow=TRUE) 
+maxSSEnr <- matrix(rep(100, K0), nrow=nInterim, ncol=K0, byrow=TRUE) 
+
+## construct matrix of rates
+for (i in 1:K0)  
+{
+  rRatesMod[(i+1):(K0+1),i]= rTarg     
+}
+rRatesMod[(K0+2),] <- c(0.05,0.15,0.25,0.35,0.45)
+rRatesMod[(K0+3),] <- c(0.15,0.30,0.30,0.30,0.45)
+rRatesMod[(K0+4),] <- c(0.15,0.15,0.30,0.30,0.30)
+
+## conduct simulation of trial data and analysis
+x <- bma_design(
+  nSims, K0, K0, eRatesMod, rRatesMod[i+1,], meanTime, sdTime, 
+  ppEffCrit, ppFutCrit, as.logical(futOnly), rRatesNull, rRatesMid, 
+  minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, nInterim, mu0, 
+  phi0, priorModelProbs = NULL, pmp0 = pmp0
+)
 }

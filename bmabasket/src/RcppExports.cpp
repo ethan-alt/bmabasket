@@ -51,14 +51,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // collapseData
-arma::mat collapseData(arma::mat const& datMat, arma::vec const& partition);
-RcppExport SEXP _bmabasket_collapseData(SEXP datMatSEXP, SEXP partitionSEXP) {
+arma::mat collapseData(arma::mat const& yMat, arma::vec const& model);
+RcppExport SEXP _bmabasket_collapseData(SEXP yMatSEXP, SEXP modelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat const& >::type datMat(datMatSEXP);
-    Rcpp::traits::input_parameter< arma::vec const& >::type partition(partitionSEXP);
-    rcpp_result_gen = Rcpp::wrap(collapseData(datMat, partition));
+    Rcpp::traits::input_parameter< arma::mat const& >::type yMat(yMatSEXP);
+    Rcpp::traits::input_parameter< arma::vec const& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(collapseData(yMat, model));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -79,7 +79,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // bma_design_cpp
-Rcpp::List bma_design_cpp(int        const& nSims, arma::vec  const& eRates, arma::vec  const& rRates, arma::vec  const& aParms, arma::vec  const& ppEffCrit, arma::vec  const& ppFutCrit, int        const& futOnly, arma::vec  const& rRatesNull, arma::vec  const& rRatesAlt, int        const& minSSFut, int        const& minSSEff, arma::imat const& minSSEnr, arma::imat const& maxSSEnr, arma::ivec const& targSSPer, int        const& I0, double     const& mu0, double     const& phi0, arma::mat  const& models, arma::vec  const& logPriorModelProbs);
+Rcpp::List bma_design_cpp(int        const& nSims, arma::vec  const& eRates, arma::vec  const& rRates, arma::vec  const& aParms, arma::vec  const& ppEffCrit, arma::vec  const& ppFutCrit, int        const& futOnly, arma::vec  const& rRatesNull, arma::vec  const& rRatesAlt, int        const& minSSFut, int        const& minSSEff, arma::imat const& minSSEnr, arma::imat const& maxSSEnr, arma::ivec const& targSSPer, int        const& I0, double     const& mu0, double     const& phi0, arma::mat  const& models, arma::rowvec  const& logPriorModelProbs);
 RcppExport SEXP _bmabasket_bma_design_cpp(SEXP nSimsSEXP, SEXP eRatesSEXP, SEXP rRatesSEXP, SEXP aParmsSEXP, SEXP ppEffCritSEXP, SEXP ppFutCritSEXP, SEXP futOnlySEXP, SEXP rRatesNullSEXP, SEXP rRatesAltSEXP, SEXP minSSFutSEXP, SEXP minSSEffSEXP, SEXP minSSEnrSEXP, SEXP maxSSEnrSEXP, SEXP targSSPerSEXP, SEXP I0SEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP modelsSEXP, SEXP logPriorModelProbsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -102,7 +102,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double     const& >::type mu0(mu0SEXP);
     Rcpp::traits::input_parameter< double     const& >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< arma::mat  const& >::type models(modelsSEXP);
-    Rcpp::traits::input_parameter< arma::vec  const& >::type logPriorModelProbs(logPriorModelProbsSEXP);
+    Rcpp::traits::input_parameter< arma::rowvec  const& >::type logPriorModelProbs(logPriorModelProbsSEXP);
     rcpp_result_gen = Rcpp::wrap(bma_design_cpp(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs));
     return rcpp_result_gen;
 END_RCPP

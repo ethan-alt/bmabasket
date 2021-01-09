@@ -7,21 +7,29 @@
 bma(pi0, y, n, P = NULL, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, pmp0 = 1)
 }
 \arguments{
-\item{pi0}{vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket.}
+\item{pi0}{scalar or vector whose elements are between 0 and 1 giving threshold for the hypothesis test. If a scalar is provided, assumes same threshold for each basket}
 
 \item{y}{vector of responses}
 
 \item{n}{vector of sample sizes}
 
-\item{P}{integer giving maximum partition size; default is all partitions}
+\item{P}{integer giving maximum number of distinct parameters; default is all possible models}
 
 \item{mu0}{prior mean for beta prior}
 
 \item{phi0}{prior dispersion for beta prior}
 
-\item{priorModelProbs}{vector giving prior for models. Default is prior of each model is proportional to the number of unique probabilities raised to the power pmp0}
+\item{priorModelProbs}{(optional) vector giving prior for models. Default is proportional to \code{exp(pmp0 * D)}, where \code{D} is the number of distinct parameters in the model}
 
-\item{pmp0}{nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified.}
+\item{pmp0}{nonnegative scalar. Value of 0 corresponds to uniform prior across model space. Ignored if priorModelProbs is specified}
+}
+\value{
+a list with the following structure:
+
+\describe{
+\item{bmaProbs}{model-averaged probabilities that each basket is larger than \code{pi0}}
+\item{bmaMeans}{model-averaged posterior mean for each basket}
+}
 }
 \description{
 Given data and hyperparameters, computes posterior model probabilities
