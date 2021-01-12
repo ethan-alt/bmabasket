@@ -129,26 +129,26 @@ bma_design_checks <- function(
 #' @param pmp0 scalar giving power for \code{priorModelProbs}. If \code{pmp0==0}, a uniform prior is used for model probabilities. Defaults to 1. Ignored if \code{priorModelProbs} is not \code{NULL}
 #' 
 #' @return a nested list giving results of the simulation with the following structure:
-#' * **hypothesis.testing**       - description
-#'   - **rr**                     - description
-#'   - **fw.fpr**                 - description
-#'   - **nerr**                   - description
-#'   - **fut**                    - description
-#' * **sample.size**              - description
-#'   - **basket.ave**             - description
-#'   - **basket.med**             - description
-#'   - **basket.min**             - description
-#'   - **basket.max**             - description
-#'   - **overall.ave**            - description
-#' * **point.estimation**         - description
-#'   - **PM.ave**                 - description
-#'   - **SP.ave**                 - description
-#'   - **PP.ave**                 - description
-#'   - **bias**                   - description
-#'   - **mse**                    - description
-#' * **early.stopping**           - description
-#'   - **interm.stop.prob**       - description
-#'   - **baskets.continuing.ave** - description
+#' * **hypothesis.testing**       - hypothesis testing information
+#'   - **rr**                     - basket-specific null hypothesis rejection rate
+#'   - **fw.fpr**                 - family-wise false positive rate (across all inactive baskets)
+#'   - **nerr**                   - average number of false null hypothesis rejections
+#'   - **fut**                    - basket-specific probability of futility stopping
+#' * **sample.size**              - trial sample size information
+#'   - **basket.ave**             - basket-specific expected sample size
+#'   - **basket.med**             - basket-specific median sample size
+#'   - **basket.min**             - basket-specific minimum sample size
+#'   - **basket.max**             - basket-specific maximum sample size
+#'   - **overall.ave**            - expected overall sample size
+#' * **point.estimation**         - point estimation information
+#'   - **PM.ave**                 - basket-specific average posterior mean
+#'   - **SP.ave**                 - basket-specific average sample proportion
+#'   - **PP.ave**                 - basket-specific average posterior probability
+#'   - **bias**                   - basket-specific bias of the posterior mean
+#'   - **mse**                    - basket-specific MSE of the posterior mean
+#' * **early.stopping**           - early stopping information
+#'   - **interim.stop.prob**      - probability of trial stoppage by interim
+#'   - **baskets.continuing.ave** - average number of baskets continuing past interim
 #' 
 #' @examples
 #' ## SIMULATE DATA AND SET SIMULATION PARAMS

@@ -3,10 +3,10 @@ Type: Package
 Title: Bayesian model averaging for basket trials
 Version: 0.1.0
 Date: 2021-01-09
-Authors@R: c(person("Ethan", "Alt", role = c("aut", "cre"),
-                     email = "ethanalt@live.unc.edu"),
-              person("Matthew", "Psioda", role = "aut", email = "matt_psioda@unc.edu")
-             )
+Authors@R: as.person(c(
+    "Matt Psioda <matt_psioda@unc.edu> [aut,cre]",
+    "Ethan Alt <ethanalt@live.unc.edu> [aut]"
+  ))
 Maintainer: Matthew Psioda <matt_psioda@unc.edu>
 Description: An implementation of the Bayesian model averaging method 
     of Psioda et al. (2019) <doi:10.1093/biostatistics/kxz014> for basket trials. 

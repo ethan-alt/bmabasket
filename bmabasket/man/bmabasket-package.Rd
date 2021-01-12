@@ -20,11 +20,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Ethan Alt \email{ethanalt@live.unc.edu}
+\strong{Maintainer}: Matt Psioda \email{matt_psioda@unc.edu}
 
 Authors:
 \itemize{
-  \item Matthew Psioda \email{matt_psioda@unc.edu}
+  \item Ethan Alt \email{ethanalt@live.unc.edu}
 }
 
 }

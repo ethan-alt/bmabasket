@@ -77,33 +77,33 @@ bma_design(
 \value{
 a nested list giving results of the simulation with the following structure:
 \itemize{
-\item \strong{hypothesis.testing}       - description
+\item \strong{hypothesis.testing}       - hypothesis testing information
 \itemize{
-\item \strong{rr}                     - description
-\item \strong{fw.fpr}                 - description
-\item \strong{nerr}                   - description
-\item \strong{fut}                    - description
+\item \strong{rr}                     - basket-specific null hypothesis rejection rate
+\item \strong{fw.fpr}                 - family-wise false positive rate (across all inactive baskets)
+\item \strong{nerr}                   - average number of false null hypothesis rejections
+\item \strong{fut}                    - basket-specific probability of futility stopping
 }
-\item \strong{sample.size}              - description
+\item \strong{sample.size}              - trial sample size information
 \itemize{
-\item \strong{basket.ave}             - description
-\item \strong{basket.med}             - description
-\item \strong{basket.min}             - description
-\item \strong{basket.max}             - description
-\item \strong{overall.ave}            - description
+\item \strong{basket.ave}             - basket-specific expected sample size
+\item \strong{basket.med}             - basket-specific median sample size
+\item \strong{basket.min}             - basket-specific minimum sample size
+\item \strong{basket.max}             - basket-specific maximum sample size
+\item \strong{overall.ave}            - expected overall sample size
 }
-\item \strong{point.estimation}         - description
+\item \strong{point.estimation}         - point estimation information
 \itemize{
-\item \strong{PM.ave}                 - description
-\item \strong{SP.ave}                 - description
-\item \strong{PP.ave}                 - description
-\item \strong{bias}                   - description
-\item \strong{mse}                    - description
+\item \strong{PM.ave}                 - basket-specific average posterior mean
+\item \strong{SP.ave}                 - basket-specific average sample proportion
+\item \strong{PP.ave}                 - basket-specific average posterior probability
+\item \strong{bias}                   - basket-specific bias of the posterior mean
+\item \strong{mse}                    - basket-specific MSE of the posterior mean
 }
-\item \strong{early.stopping}           - description
+\item \strong{early.stopping}           - early stopping information
 \itemize{
-\item \strong{interm.stop.prob}       - description
-\item \strong{baskets.continuing.ave} - description
+\item \strong{interim.stop.prob}      - probability of trial stoppage by interim
+\item \strong{baskets.continuing.ave} - average number of baskets continuing past interim
 }
 }
 }
