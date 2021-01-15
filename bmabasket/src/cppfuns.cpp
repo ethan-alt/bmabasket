@@ -22,9 +22,9 @@ int numModels_cpp( int const& K, int const& P ) {
   for ( int p = 1; p <= P; p++ ) {
     double temp = 0;
     for ( int j = 0; j <= P; j++ ) {
-      temp += pow(-1, p-j) * pow(j, K) * R::choose(p, j);
+      temp += std::pow(-1.0, p-j) * std::pow( (double) j, (double) K) * R::choose(p, j);
     }
-    res += pow( R::gammafn(p + 1.0) , -1) * temp;
+    res += std::pow( R::gammafn(p + 1.0) , -1) * temp;
   }
   return( (int) res);
 }
