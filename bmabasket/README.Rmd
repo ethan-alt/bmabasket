@@ -15,8 +15,9 @@ knitr::opts_chunk$set(
 
 # bmabasket
 
-<!-- badges: start -->
-<!-- badges: end -->
+  <!-- badges: start -->
+  [![R-CMD-check](https://github.com/ethan-alt/bmabasket/workflows/R-CMD-check/badge.svg)](https://github.com/ethan-alt/bmabasket/actions)
+  <!-- badges: end -->
 
 The goal of bmabasket is to simulate basket trial data based on hyperparameters and analyze things such as
 the family-wise error rate, bias, and MSE. The package uses Bayesian model average (BMA) to compute
