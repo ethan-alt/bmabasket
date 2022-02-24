@@ -1,4 +1,4 @@
-# bmabasket 0.1.1
+# bmabasket 0.1.2
 
 * Fixed a bug with prior model probabilities
 

@@ -146,9 +146,10 @@ Rcpp::List bma_cpp(
     List postModel      = logPostProb( pi0, datMat, partitionMat.col(j), a0, b0, lbeta_a0b0 );
     
     // increment bmaProbs by unweighted posterior model probability; add to denominator of posterior model probs
-    double logModelProbNumerator = postModel["sumLogBeta"] + logModelPriors(j);  // sum( log(Beta(a_jp, b_jp) - log(B(a0, b0) ) ) ) + log prior
-    arma::vec postProb           = postModel["pp"];                              // log[ Pr(pi_k > pi_0k | Mj, D) ]
-    arma::vec postMean           = postModel["mn"];                              // log[ a_jp / (a_jp + b_jp) ]
+    double logModelProbNumerator  = postModel["sumLogBeta"]; // initialize to sum( log(Beta(a_jp, b_jp) - log(B(a0, b0) ) ) )
+    logModelProbNumerator        += logModelPriors(j);       // add on prior model probability
+    arma::vec postProb            = postModel["pp"];         // log[ Pr(pi_k > pi_0k | Mj, D) ]
+    arma::vec postMean            = postModel["mn"];         // log[ a_jp / (a_jp + b_jp) ]
     
     bmaProbs             += arma::exp( logModelProbNumerator + postProb );
     bmaMeans             += arma::exp( logModelProbNumerator + postMean );
