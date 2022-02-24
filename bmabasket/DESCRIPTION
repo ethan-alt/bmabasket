@@ -1,7 +1,7 @@
 Package: bmabasket
 Type: Package
 Title: Bayesian Model Averaging for Basket Trials
-Version: 0.1.0
+Version: 0.1.1
 Date: 2021-01-09
 Authors@R: c(
     person("Matt", "Psioda", email = "matt_psioda@unc.edu", role = "cre"),
