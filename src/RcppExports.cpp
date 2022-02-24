@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // numModels_cpp
 int numModels_cpp(int const& K, int const& P);
 RcppExport SEXP _bmabasket_numModels_cpp(SEXP KSEXP, SEXP PSEXP) {

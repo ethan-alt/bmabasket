@@ -5,3 +5,6 @@
 ^README\.Rmd$
 ^CRAN-RELEASE$
 ^\.github$
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
