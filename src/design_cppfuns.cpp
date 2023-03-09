@@ -272,27 +272,38 @@ Rcpp::List bma_design_cpp (
       arma::rowvec nMinCritMet( K0, arma::fill::zeros );
       arma::rowvec nMaxCritMet( K0, arma::fill::zeros );
       
+	  // if there is no minimum enrollment requirement, it is met by default;
       for (int k = 0; k < K0; k++)
       {
         if (minSSEnr(i, k) == 0) { nMinCritMet[k] = 1; }
       }
       
+	  // accumulate data starting after last interim and looping over all future enrollees until
+	  // target criteria are met;
       int idx2=0;
       for ( int n = nStart; n < nMax; n++ )
       {
-        int b = bData(n, 1);
-        int y = bData(n, 0);
+        int b = bData(n, 1);  // basket label;
+        int y = bData(n, 0);  // indicator of response;
         
+		// Condition: do if basket is active and max enrollment for that basket is not met;
         if (active[b] == 1 and nMaxCritMet[b] == 0)
         {
-          nAcc[b] +=1;
+          nAcc[b] += 1; // increment n for basket label b;
+		  
+		  // check whether the number of individuals enrolled for the basket is above the minimum and maximum;
           if (nAcc[b] >= minSSEnr(i,b)) { nMinCritMet[b]=1; }
           if (nAcc[b] >= maxSSEnr(i,b)) { nMaxCritMet[b]=1; }
           
+		  // accumulate number of repsonders in basket and number of individuals in basket
           yMat(y,b)   += 1;
           nVec[b]     += 1;	
+		  
+		  // update elapsed duration;
           duration     = bData(n,4);   // = ft						
           
+		  // if the number of individuals accumulated is at least the target AND
+		  // if all active baskets have reached their minimum enrollment then stop;
           if ( (sum(nAcc)>= numAdd) and (sum(nMinCritMet)==sum(active)) ) { n = nMax + 100; }
         }	
         idx2++;
