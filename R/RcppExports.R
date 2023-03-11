@@ -102,6 +102,7 @@ simData <- function(K0, I0, targSSPer, rRates, eScales, aParms) {
 #' @param ppFutCrit \code{vector} giving basket-specific posterior probability threshold for futility
 #' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
 #' @param futOnly_stopEffAll \code{logical} in futility only designs when all basket simultaneously demonstrate activity still allow stopping (\code{TRUE} = yes, \code{FALSE} = no)
+#' @param futPool \code{logical} stop all baskets based on full exchangeability model futility criteria (\code{TRUE} = yes, \code{FALSE} = no)
 #' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
 #' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 #' @param minSSFut minimum number of subjects in basket to assess futility
@@ -117,7 +118,7 @@ simData <- function(K0, I0, targSSPer, rRates, eScales, aParms) {
 #' @return a list giving aspects of the simulation
 #' @keywords internal
 #' @noRd
-bma_design_cpp <- function(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs) {
-    .Call('_bmabasket_bma_design_cpp', PACKAGE = 'bmabasket', nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs)
+bma_design_cpp <- function(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs) {
+    .Call('_bmabasket_bma_design_cpp', PACKAGE = 'bmabasket', nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs)
 }
 

@@ -121,6 +121,7 @@ arma::mat simData(
 //' @param ppFutCrit \code{vector} giving basket-specific posterior probability threshold for futility
 //' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
 //' @param futOnly_stopEffAll \code{logical} in futility only designs when all basket simultaneously demonstrate activity still allow stopping (\code{TRUE} = yes, \code{FALSE} = no)
+//' @param futPool \code{logical} stop all baskets based on full exchangeability model futility criteria (\code{TRUE} = yes, \code{FALSE} = no)
 //' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
 //' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 //' @param minSSFut minimum number of subjects in basket to assess futility
@@ -146,6 +147,7 @@ Rcpp::List bma_design_cpp (
     arma::vec  const& ppFutCrit, 
     int        const& futOnly, 
 	int        const& futOnly_stopEffAll,
+	int        const& futPool,
     arma::vec  const& rRatesNull,
     arma::vec  const& rRatesAlt, 
     int        const& minSSFut, 
@@ -343,7 +345,7 @@ Rcpp::List bma_design_cpp (
         {
           int d        = mID[k];                                          // assignment for kth basket in model mID
           pp(m, k)     = post_prob_cdf[k]( y(d,0), y(d,1) );              // CDF pp for efficacy  
-          pp_mid(m, k) = post_prob_cdf_mid[k]( y(d,0), y(d,1) );					// CDF pp for futility
+          pp_mid(m, k) = post_prob_cdf_mid[k]( y(d,0), y(d,1) );		  // CDF pp for futility
           mn(m, k)     = ( a0 + y(d,1) ) / ( a0 + b0 + y(d,1) + y(d,0) ); // posterior mean
         }		
       }
@@ -404,6 +406,17 @@ Rcpp::List bma_design_cpp (
           decision = decision_Fut;
         }
       }
+	  
+	  if ( futPool == 1 and ( i < (I0 - 1) ) and ( ppModel[0] = max(ppModel) ) and ( pp_mid(0,0) < min(ppFutCrit) ) )
+	  {
+		for (int k = 0; k < K0; k++)
+        {  
+			active[k] = 0; 
+			decision[k] = -1; 
+		}
+	  }
+	  
+	  
       
       
       all_cont(s,i) = sum(active);
