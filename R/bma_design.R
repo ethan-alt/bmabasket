@@ -54,7 +54,7 @@ check_var <- function(
 
 
 bma_design_checks <- function(
-  nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, rRatesNull, rRatesAlt, minSSFut,
+  nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, rRatesNull, rRatesAlt, minSSFut,
   minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
 ) {
   check_var(nSims, 'nSims', length = 1, lower = 1, lower.strict = TRUE, int = TRUE)
@@ -67,6 +67,10 @@ bma_design_checks <- function(
   if ( !is.logical(futOnly) ) {
     stop('futOnly must be TRUE or FALSE')
   }
+  
+  if ( !is.logical(futOnly_stopEffAll) ) {
+    stop('futOnly_stopEffAll must be TRUE or FALSE')
+  }  
   check_var(ppEffCrit, 'ppEffCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(ppFutCrit, 'ppFutCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(rRatesNull, 'rRatesNull', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
@@ -115,6 +119,7 @@ bma_design_checks <- function(
 #' @param ppEffCrit scalar or vector giving basket-specific posterior probability threshold for activity (i.e., efficacy).
 #' @param ppFutCrit scalar or vector giving basket-specific posterior probability threshold for futility
 #' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
+#' @param futOnly_stopEffAll \code{logical} in futility only designs when all basket simultaneously demonstrate activity still allow stopping (\code{TRUE} = yes, \code{FALSE} = no)
 #' @param rRatesNull scalar or vector of basket-specific null hypothesis values (for efficacy determination)
 #' @param rRatesAlt scalar or vector of basket-specific hypothesized alternative values (for futility determination)
 #' @param minSSFut minimum number of subjects in basket to assess futility
@@ -165,6 +170,7 @@ bma_design_checks <- function(
 #' targSSPer  <- c(n1, n2)
 #' nInterim   <- 2
 #' futOnly    <- 1
+#' futOnly_stopEffAll    <- 1
 #' K0         <- 5
 #' row        <- 0
 #' mss        <- 4
@@ -199,7 +205,7 @@ bma_design_checks <- function(
 #' )
 #' @export
 bma_design <- function(
-  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, rRatesNull, rRatesAlt, minSSFut,
+  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, rRatesNull, rRatesAlt, minSSFut,
   minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, pmp0 = 1
 ) {
   
@@ -232,7 +238,7 @@ bma_design <- function(
   
   ## Perform checks
   bma_design_checks(
-    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly, rRatesNull, rRatesAlt, minSSFut,
+    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, rRatesNull, rRatesAlt, minSSFut,
     minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
   )
   
@@ -255,7 +261,7 @@ bma_design <- function(
   ## Call C++ function
   bma_design_cpp(
     nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, 
-    as.integer(futOnly), rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
+    as.integer(futOnly), as.integer(futOnly_stopEffAll), rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
     targSSPer, I0, mu0, phi0, models, priorModelProbs
   )
 }
