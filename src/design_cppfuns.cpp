@@ -120,6 +120,7 @@ arma::mat simData(
 //' @param ppEffCrit \code{vector} giving basket-specific posterior probability threshold for activity (i.e., efficacy)
 //' @param ppFutCrit \code{vector} giving basket-specific posterior probability threshold for futility
 //' @param futOnly \code{logical} giving whether design allows only for futility stopping (\code{TRUE} = futility only, \code{FALSE} = both futility and efficacy)
+//' @param futOnly_stopEffAll \code{logical} giving whether design allows for efficacy stopping in futility only designs when all basket simultaneously demonstrate activity (\code{TRUE} = yes, \code{FALSE} = no)
 //' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
 //' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 //' @param minSSFut minimum number of subjects in basket to assess futility
@@ -144,6 +145,7 @@ Rcpp::List bma_design_cpp (
     arma::vec  const& ppEffCrit,
     arma::vec  const& ppFutCrit, 
     int        const& futOnly, 
+	int        const& futOnly_stopEffAll,
     arma::vec  const& rRatesNull,
     arma::vec  const& rRatesAlt, 
     int        const& minSSFut, 
@@ -396,7 +398,7 @@ Rcpp::List bma_design_cpp (
           }
         }
         
-        if (poss_stop == prev_active)
+        if ((poss_stop == prev_active) and (futOnly_stopEffAll == 1))
         {
           active   = active_Fut;
           decision = decision_Fut;
