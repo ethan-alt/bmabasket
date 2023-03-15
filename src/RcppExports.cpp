@@ -84,8 +84,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // bma_design_cpp
-Rcpp::List bma_design_cpp(int        const& nSims, arma::vec  const& eRates, arma::vec  const& rRates, arma::vec  const& aParms, arma::vec  const& ppEffCrit, arma::vec  const& ppFutCrit, int        const& futOnly, int        const& futOnly_stopEffAll, int        const& futPool, arma::vec  const& rRatesNull, arma::vec  const& rRatesAlt, int        const& minSSFut, int        const& minSSEff, arma::imat const& minSSEnr, arma::imat const& maxSSEnr, arma::ivec const& targSSPer, int        const& I0, double     const& mu0, double     const& phi0, arma::mat  const& models, arma::rowvec  const& logPriorModelProbs);
-RcppExport SEXP _bmabasket_bma_design_cpp(SEXP nSimsSEXP, SEXP eRatesSEXP, SEXP rRatesSEXP, SEXP aParmsSEXP, SEXP ppEffCritSEXP, SEXP ppFutCritSEXP, SEXP futOnlySEXP, SEXP futOnly_stopEffAllSEXP, SEXP futPoolSEXP, SEXP rRatesNullSEXP, SEXP rRatesAltSEXP, SEXP minSSFutSEXP, SEXP minSSEffSEXP, SEXP minSSEnrSEXP, SEXP maxSSEnrSEXP, SEXP targSSPerSEXP, SEXP I0SEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP modelsSEXP, SEXP logPriorModelProbsSEXP) {
+Rcpp::List bma_design_cpp(int        const& nSims, arma::vec  const& eRates, arma::vec  const& rRates, arma::vec  const& aParms, arma::vec  const& ppEffCrit, arma::vec  const& ppFutCrit, int        const& futOnly, int        const& futOnly_stopEffAll, int        const& futPool, arma::vec  const& rRatesNull, arma::vec  const& rRatesAlt, arma::vec  const& rRatesHigh, arma::vec  const& rRatesLow, int        const& minSSFut, int        const& minSSEff, arma::imat const& minSSEnr, arma::imat const& maxSSEnr, arma::ivec const& targSSPer, int        const& I0, double     const& mu0, double     const& phi0, arma::mat  const& models, arma::rowvec  const& logPriorModelProbs);
+RcppExport SEXP _bmabasket_bma_design_cpp(SEXP nSimsSEXP, SEXP eRatesSEXP, SEXP rRatesSEXP, SEXP aParmsSEXP, SEXP ppEffCritSEXP, SEXP ppFutCritSEXP, SEXP futOnlySEXP, SEXP futOnly_stopEffAllSEXP, SEXP futPoolSEXP, SEXP rRatesNullSEXP, SEXP rRatesAltSEXP, SEXP rRatesHighSEXP, SEXP rRatesLowSEXP, SEXP minSSFutSEXP, SEXP minSSEffSEXP, SEXP minSSEnrSEXP, SEXP maxSSEnrSEXP, SEXP targSSPerSEXP, SEXP I0SEXP, SEXP mu0SEXP, SEXP phi0SEXP, SEXP modelsSEXP, SEXP logPriorModelProbsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -100,6 +100,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int        const& >::type futPool(futPoolSEXP);
     Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesNull(rRatesNullSEXP);
     Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesAlt(rRatesAltSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesHigh(rRatesHighSEXP);
+    Rcpp::traits::input_parameter< arma::vec  const& >::type rRatesLow(rRatesLowSEXP);
     Rcpp::traits::input_parameter< int        const& >::type minSSFut(minSSFutSEXP);
     Rcpp::traits::input_parameter< int        const& >::type minSSEff(minSSEffSEXP);
     Rcpp::traits::input_parameter< arma::imat const& >::type minSSEnr(minSSEnrSEXP);
@@ -110,7 +112,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double     const& >::type phi0(phi0SEXP);
     Rcpp::traits::input_parameter< arma::mat  const& >::type models(modelsSEXP);
     Rcpp::traits::input_parameter< arma::rowvec  const& >::type logPriorModelProbs(logPriorModelProbsSEXP);
-    rcpp_result_gen = Rcpp::wrap(bma_design_cpp(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs));
+    rcpp_result_gen = Rcpp::wrap(bma_design_cpp(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -121,7 +123,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_bmabasket_bma_cpp", (DL_FUNC) &_bmabasket_bma_cpp, 6},
     {"_bmabasket_collapseData", (DL_FUNC) &_bmabasket_collapseData, 2},
     {"_bmabasket_simData", (DL_FUNC) &_bmabasket_simData, 6},
-    {"_bmabasket_bma_design_cpp", (DL_FUNC) &_bmabasket_bma_design_cpp, 21},
+    {"_bmabasket_bma_design_cpp", (DL_FUNC) &_bmabasket_bma_design_cpp, 23},
     {NULL, NULL, 0}
 };
 

@@ -105,6 +105,8 @@ simData <- function(K0, I0, targSSPer, rRates, eScales, aParms) {
 #' @param futPool \code{logical} stop all baskets based on full exchangeability model futility criteria (\code{TRUE} = yes, \code{FALSE} = no)
 #' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
 #' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
+#' @param rRatesHigh \code{vector} of basket-specific null hypothesis values (for efficacy determination)
+#' @param rRatesLow \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 #' @param minSSFut minimum number of subjects in basket to assess futility
 #' @param minSSEff minimum number of subjects in basket to assess activity
 #' @param minSSEnr matrix giving minimum number of new subjects per basket before next analysis (each row is an interim analysis)
@@ -118,7 +120,7 @@ simData <- function(K0, I0, targSSPer, rRates, eScales, aParms) {
 #' @return a list giving aspects of the simulation
 #' @keywords internal
 #' @noRd
-bma_design_cpp <- function(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs) {
-    .Call('_bmabasket_bma_design_cpp', PACKAGE = 'bmabasket', nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs)
+bma_design_cpp <- function(nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs) {
+    .Call('_bmabasket_bma_design_cpp', PACKAGE = 'bmabasket', nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut, minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, models, logPriorModelProbs)
 }
 

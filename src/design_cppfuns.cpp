@@ -124,6 +124,8 @@ arma::mat simData(
 //' @param futPool \code{logical} stop all baskets based on full exchangeability model futility criteria (\code{TRUE} = yes, \code{FALSE} = no)
 //' @param rRatesNull \code{vector} of basket-specific null hypothesis values (for efficacy determination)
 //' @param rRatesAlt \code{vector} of basket-specific hypothesized alternative values (for futility determination)
+//' @param rRatesHigh \code{vector} of basket-specific null hypothesis values (for efficacy determination)
+//' @param rRatesLow \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 //' @param minSSFut minimum number of subjects in basket to assess futility
 //' @param minSSEff minimum number of subjects in basket to assess activity
 //' @param minSSEnr matrix giving minimum number of new subjects per basket before next analysis (each row is an interim analysis)
@@ -150,6 +152,8 @@ Rcpp::List bma_design_cpp (
 	int        const& futPool,
     arma::vec  const& rRatesNull,
     arma::vec  const& rRatesAlt, 
+    arma::vec  const& rRatesHigh,
+    arma::vec  const& rRatesLow, 
     int        const& minSSFut, 
     int        const& minSSEff, 
     arma::imat const& minSSEnr,
@@ -195,11 +199,18 @@ Rcpp::List bma_design_cpp (
   std::vector<arma::mat> post_prob_cdf(K0);
   std::vector<arma::mat> post_prob_cdf_mid(K0);
   
+  // new addition;
+  std::vector<arma::mat> post_prob_cdf_high(K0);
+  std::vector<arma::mat> post_prob_cdf_low(K0);
+  
   // get posterior normalizing constants
   for (int k = 0; k < K0; k++)
   {
     arma::mat pp( nMax + 1, nMax + 1, arma::fill::zeros);	
-    arma::mat pp_mid(nMax + 1, nMax + 1, arma::fill::zeros);				
+    arma::mat pp_mid(nMax + 1, nMax + 1, arma::fill::zeros);		
+
+    arma::mat pp_high( nMax + 1, nMax + 1, arma::fill::zeros);	
+    arma::mat pp_low(nMax + 1, nMax + 1, arma::fill::zeros);		
     for ( int y0 = 0; y0 <= nMax; y0++ )
     {
       for ( int y1 = 0; y1 <= nMax; y1++ )
@@ -212,15 +223,26 @@ Rcpp::List bma_design_cpp (
           log_post_nc(y0, y1) = lgamma(a1+b1) - lgamma(a1) - lgamma(b1);
           pp(y0,y1)           = R::pbeta( rRatesNull[k], a1, b1, 0, 0 );
           pp_mid(y0,y1)       = R::pbeta( rRatesNull[k] * 0.5 + rRatesAlt[k] * 0.5, a1, b1, 0, 0);
+		  
+          pp_high(y0,y1)      = R::pbeta( rRatesHigh[k], a1, b1, 0, 0 );
+          pp_low(y0,y1)       = R::pbeta( rRatesLow[k],  a1, b1, 1, 0 );
+		  		  
+		  
         }
       }		
     }
-    post_prob_cdf[k]     = pp;
-    post_prob_cdf_mid[k] = pp_mid;
+    post_prob_cdf[k]      = pp;
+    post_prob_cdf_mid[k]  = pp_mid;
+	post_prob_cdf_high[k] = pp_high;
+	post_prob_cdf_low[k]  = pp_low;
   }
   
   arma::mat all_PostProbs(nSims, K0);
   arma::mat all_PostMeans(nSims, K0);
+  arma::mat all_PostProbsHigh(nSims, K0); 
+  arma::mat all_PostProbsMed(nSims, K0);   
+  arma::mat all_PostProbsLow(nSims, K0);  
+  
   arma::mat  all_Efficacy(nSims, K0, arma::fill::zeros);
   arma::mat  all_Futility(nSims, K0, arma::fill::zeros);
   arma::mat         all_n(nSims, K0, arma::fill::zeros);
@@ -255,8 +277,12 @@ Rcpp::List bma_design_cpp (
     
     // containers for final study results;
     arma::rowvec basket_specific_pp(    K0, arma::fill::zeros);	    // container for basket specific pp for efficacy
-    arma::rowvec basket_specific_pp_mid(K0, arma::fill::zeros);			// container for basket specific pp for futility
-    arma::rowvec basket_specific_mn(    K0, arma::fill::zeros);			// container for basket specific posterior mean
+    arma::rowvec basket_specific_pp_mid(K0, arma::fill::zeros);		// container for basket specific pp for futility
+
+    arma::rowvec basket_specific_pp_high(K0, arma::fill::zeros);	// container for basket specific pp for efficacy (alternative)
+    arma::rowvec basket_specific_pp_low(K0, arma::fill::zeros);		// container for basket specific pp for futility (alternative)
+	
+    arma::rowvec basket_specific_mn(    K0, arma::fill::zeros);		// container for basket specific posterior mean
     
     // containers for final study data;
     arma::mat yMat(2, K0, arma::fill::zeros);		
@@ -322,7 +348,12 @@ Rcpp::List bma_design_cpp (
       arma::rowvec ppModel = logPriorModelProbs;          // container for posterior model probability container; 
       
       arma::mat     pp(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for efficacy;
-      arma::mat pp_mid(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for futility;				
+      arma::mat pp_mid(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for futility;		
+
+      arma::mat pp_high(M0, K0, arma::fill::zeros);      // container for model-specific posterior probabilities for efficacy (alternative);
+      arma::mat pp_low(M0, K0, arma::fill::zeros);       // container for model-specific posterior probabilities for futility (alternative);		
+
+	  
       arma::mat     mn(M0, K0, arma::fill::zeros);       // container for model-specific posterior means;
       
       // loop over models
@@ -343,9 +374,14 @@ Rcpp::List bma_design_cpp (
         // compute model-specific posterior quantities;
         for ( int k = 0; k < K0; k++ )
         {
-          int d        = mID[k];                                          // assignment for kth basket in model mID
-          pp(m, k)     = post_prob_cdf[k]( y(d,0), y(d,1) );              // CDF pp for efficacy  
-          pp_mid(m, k) = post_prob_cdf_mid[k]( y(d,0), y(d,1) );		  // CDF pp for futility
+          int d         = mID[k];                                         // assignment for kth basket in model mID
+		  
+          pp(m, k)      = post_prob_cdf[k]( y(d,0), y(d,1) );             // CDF pp for efficacy  
+          pp_mid(m, k)  = post_prob_cdf_mid[k]( y(d,0), y(d,1) );		  // CDF pp for futility
+		  
+          pp_high(m, k) = post_prob_cdf_high[k]( y(d,0), y(d,1) );        // CDF pp for efficacy (alternative) 
+          pp_low(m, k)  = post_prob_cdf_low[k]( y(d,0), y(d,1) );		  // CDF pp for futility (alternative)		  
+		  
           mn(m, k)     = ( a0 + y(d,1) ) / ( a0 + b0 + y(d,1) + y(d,0) ); // posterior mean
         }		
       }
@@ -357,65 +393,74 @@ Rcpp::List bma_design_cpp (
       ppModel        = ppModel / sumProb;
       
       // model averaged posterior quantities
-      basket_specific_pp     = ppModel * pp;
-      basket_specific_pp_mid = ppModel * pp_mid;
-      basket_specific_mn     = ppModel * mn;
+      basket_specific_pp      = ppModel * pp;
+      basket_specific_pp_mid  = ppModel * pp_mid;
+	  
+      basket_specific_pp_high = ppModel * pp_high;
+      basket_specific_pp_low  = ppModel * pp_low;	  
+	  
+      basket_specific_mn      = ppModel * mn;
       
       int prev_active = sum(active);
 
-      for (int k = 0; k < K0; k++)
-      {
-        int eval_crit_met =    (nVec[k] >= minSSEff) 
-                            or ( (prev_active == 1) and (active[k]==1) ) 
-                            or (i == (I0 - 1) );
-        
-        if ( 
-              (eval_crit_met == 1) and (futOnly == 0 or (i == (I0 - 1)) ) and (basket_specific_pp[k] >= ppEffCrit[k]) 
-        ) { 
-          active[k]   = 0; 
-          decision[k] = 1; 
-        }
-        
-        eval_crit_met = ( (nVec[k] >= minSSFut) or ((prev_active == 1) and (active[k] == 1)) ) and (i < (I0 - 1));
-        if ((eval_crit_met==1) and (basket_specific_pp_mid[k]<=ppFutCrit[k])) { 
-          active[k] = 0; 
-          decision[k] = -1; 
-        }
-      }
+
+      // ---------------------------------------------------------------------------------------------------------------
+	  // original approach;
+		  for (int k = 0; k < K0; k++)
+		  {
+				// EFFICACY          - min SS criteria -       ----- one basket active criteria -----       final analysis
+				int eval_crit_met = (nVec[k] >= minSSEff) or ( (prev_active == 1) and (active[k]==1) ) or (i == (I0 - 1) );
+				
+				//   basket can be evaluated    early stopping for activity or last analysis
+				if ( (eval_crit_met == 1) and (futOnly == 0 or (i == (I0 - 1)) ) and (basket_specific_pp[k] >= ppEffCrit[k]) ) 
+				{ 
+				  active[k]   = 0; 
+				  decision[k] = 1; 
+				}
+				
+				// FUTILITY        - min SS criteria -       ----- one basket active criteria -----       not final analysis
+				eval_crit_met = ( (nVec[k] >= minSSFut) or ((prev_active == 1) and (active[k] == 1)) ) and (i < (I0 - 1));
+				if ((eval_crit_met==1) and (basket_specific_pp_mid[k]<=ppFutCrit[k])) { 
+				  active[k] = 0; 
+				  decision[k] = -1; 
+				}
+		  }
       
-      if ( futOnly == 1 and ( i < (I0 - 1) ) )
-      {
-        arma::irowvec active_Fut   = active;
-        arma::irowvec decision_Fut = decision;
-        
-        prev_active   = sum(active);
-        int poss_stop = 0;
-        for (int k = 0; k < K0; k++)
-        {
-          if ( active[k] == 1 and ( nVec[k] >= minSSEff ) and ( basket_specific_pp[k] >= ppEffCrit[k] ) )
-          {
-            poss_stop       += 1;
-            active_Fut[k]    = 0;
-            decision_Fut[k]  = 1;
-          }
-        }
-        
-        if ((poss_stop == prev_active) and (futOnly_stopEffAll == 1))
-        {
-          active   = active_Fut;
-          decision = decision_Fut;
-        }
-      }
-	  
-	  if ( futPool == 1 and ( i < (I0 - 1) ) and ( ppModel[0] = max(ppModel) ) and ( pp_mid(0,0) < min(ppFutCrit) ) )
-	  {
-		for (int k = 0; k < K0; k++)
-        {  
-			active[k] = 0; 
-			decision[k] = -1; 
+		// futility only stopping designs, allow stopping for efficacy when ALL baskets show activity
+		if ( futOnly == 1 and ( i < (I0 - 1) ) and (futOnly_stopEffAll == 1))
+		{
+				arma::irowvec active_Fut   = active;
+				arma::irowvec decision_Fut = decision;
+				
+				prev_active   = sum(active);
+				int poss_stop = 0;
+				for (int k = 0; k < K0; k++)
+				{
+				  if ( active[k] == 1 and ( nVec[k] >= minSSEff ) and ( basket_specific_pp[k] >= ppEffCrit[k] ) )
+				  {
+					poss_stop       += 1;
+					active_Fut[k]    = 0;
+					decision_Fut[k]  = 1;
+				  }
+				}
+				
+				if (poss_stop == prev_active) 
+				{
+				  active   = active_Fut;
+				  decision = decision_Fut;
+				}
 		}
-	  }
 	  
+		// futility anaysis based on pooled data when full exchangeability model is most likely
+		if ( futPool == 1 and ( i < (I0 - 1) ) and ( ppModel[0] = max(ppModel) ) and ( pp_mid(0,0) < min(ppFutCrit) ) )
+		{
+			for (int k = 0; k < K0; k++)
+			{  
+				active[k] = 0; 
+				decision[k] = -1; 
+			}
+		}
+	  // ---------------------------------------------------------------------------------------------------------------
 	  
       
       
@@ -428,7 +473,10 @@ Rcpp::List bma_design_cpp (
       }
     }
     
-    all_PostProbs.row(s) = basket_specific_pp;
+    all_PostProbs.row(s)     = basket_specific_pp;
+	all_PostProbsHigh.row(s) = basket_specific_pp_high;
+	all_PostProbsMed.row(s)  = 1-basket_specific_pp_high-basket_specific_pp_low;
+	all_PostProbsLow.row(s)  = basket_specific_pp_low
     all_PostMeans.row(s) = basket_specific_mn;
     
     for ( int k = 0; k < K0; k++ )
@@ -479,11 +527,14 @@ Rcpp::List bma_design_cpp (
   
   
   Rcpp::List PE = Rcpp::List::create(  
-    Rcpp::Named("PM.ave") = mean(all_PostMeans),
-    Rcpp::Named("SP.ave") = mean(all_piHat),
-    Rcpp::Named("PP.ave") = mean(all_PostProbs),
-    Rcpp::Named("bias")   = mean(all_bias),
-    Rcpp::Named("mse")    = mean(all_mse)
+    Rcpp::Named("PM.ave")      = mean(all_PostMeans),
+    Rcpp::Named("SP.ave")      = mean(all_piHat),
+    Rcpp::Named("PP.ave")      = mean(all_PostProbs),
+	Rcpp::Named("PP.High.ave") = mean(all_PostProbsHigh),
+	Rcpp::Named("PP.Med.ave")  = mean(all_PostProbsMed),
+	Rcpp::Named("PP.Low.ave")  = mean(all_PostProbsLow),	
+    Rcpp::Named("bias")        = mean(all_bias),
+    Rcpp::Named("mse")         = mean(all_mse)
   );
   
   

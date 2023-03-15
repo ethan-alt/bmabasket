@@ -54,7 +54,7 @@ check_var <- function(
 
 
 bma_design_checks <- function(
-  nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, futPool = FALSE, rRatesNull, rRatesAlt, minSSFut,
+  nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, futPool = FALSE, rRatesNull, rRatesAlt, rRatesHigh,rRatesLow, minSSFut,
   minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
 ) {
   check_var(nSims, 'nSims', length = 1, lower = 1, lower.strict = TRUE, int = TRUE)
@@ -80,6 +80,10 @@ bma_design_checks <- function(
   check_var(ppFutCrit, 'ppFutCrit', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(rRatesNull, 'rRatesNull', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
   check_var(rRatesAlt, 'rRatesAlt', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
+  
+  check_var(rRatesHigh, 'rRatesHigh', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
+  check_var(rRatesLow, 'rRatesLow', length = nBaskets, length.name = 'nBaskets', lower = 0, lower.strict = TRUE, upper = 1, upper.strict = TRUE)
+  
   check_var(minSSFut, 'minSSFut', length = 1, lower = 1, lower.strict = TRUE, int = TRUE)
   check_var(minSSEff, 'minSSEff', length = 1, lower = 1, lower.strict = TRUE, int = TRUE)
   check_var(minSSEnr, 'minSSEnr', lower = 1, lower.strict = TRUE, int = TRUE)
@@ -128,6 +132,8 @@ bma_design_checks <- function(
 #' @param futPool \code{logical} stop all baskets based on full exchangeability model futility criteria (\code{TRUE} = yes, \code{FALSE} = no)
 #' @param rRatesNull scalar or vector of basket-specific null hypothesis values (for efficacy determination)
 #' @param rRatesAlt scalar or vector of basket-specific hypothesized alternative values (for futility determination)
+#' @param rRatesHigh \code{vector} of basket-specific null hypothesis values (for efficacy determination)
+#' @param rRatesLow \code{vector} of basket-specific hypothesized alternative values (for futility determination)
 #' @param minSSFut minimum number of subjects in basket to assess futility
 #' @param minSSEff minimum number of subjects in basket to assess activity
 #' @param minSSEnr matrix giving minimum number of new subjects per basket before next analysis (each row is an interim analysis, each column is a basket)
@@ -212,7 +218,7 @@ bma_design_checks <- function(
 #' )
 #' @export
 bma_design <- function(
-  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, futPool = FALSE, rRatesNull, rRatesAlt, minSSFut,
+  nSims, nBaskets, maxDistinct = nBaskets, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly = FALSE, futOnly_stopEffAll = FALSE, futPool = FALSE, rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut,
   minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0 = 0.5, phi0 = 1, priorModelProbs = NULL, pmp0 = 1
 ) {
   
@@ -241,11 +247,15 @@ bma_design <- function(
   ppFutCrit  <- scalar_to_vector(ppFutCrit, 'ppFutCrit', nBaskets, 'nBaskets')
   rRatesNull <- scalar_to_vector(rRatesNull, 'rRatesNull', nBaskets, 'nBaskets')
   rRatesAlt  <- scalar_to_vector(rRatesAlt, 'rRatesAlt', nBaskets, 'nBaskets')
+  
+  rRatesHigh <- scalar_to_vector(rRatesHigh, 'rRatesHigh', nBaskets, 'nBaskets')
+  rRatesLow  <- scalar_to_vector(rRatesLow, 'rRatesLow', nBaskets, 'nBaskets')  
+  
   targSSPer  <- scalar_to_vector(targSSPer, 'targSSPer', I0, 'I0')
   
   ## Perform checks
   bma_design_checks(
-    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, minSSFut,
+    nSims, nBaskets, maxDistinct, eRates, rRates, meanTime, sdTime, ppEffCrit, ppFutCrit, futOnly, futOnly_stopEffAll, futPool, rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut,
     minSSEff, minSSEnr, maxSSEnr, targSSPer, I0, mu0, phi0, priorModelProbs, pmp0, nModels
   )
   
@@ -268,7 +278,7 @@ bma_design <- function(
   ## Call C++ function
   bma_design_cpp(
     nSims, eRates, rRates, aParms, ppEffCrit, ppFutCrit, 
-    as.integer(futOnly), as.integer(futOnly_stopEffAll), as.integer(futPool), rRatesNull, rRatesAlt, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
+    as.integer(futOnly), as.integer(futOnly_stopEffAll), as.integer(futPool), rRatesNull, rRatesAlt, rRatesHigh, rRatesLow, minSSFut, minSSEff, minSSEnr, maxSSEnr, 
     targSSPer, I0, mu0, phi0, models, priorModelProbs
   )
 }
