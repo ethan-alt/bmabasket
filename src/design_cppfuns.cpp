@@ -476,8 +476,8 @@ Rcpp::List bma_design_cpp (
     all_PostProbs.row(s)     = basket_specific_pp;
 	all_PostProbsHigh.row(s) = basket_specific_pp_high;
 	all_PostProbsMed.row(s)  = 1-basket_specific_pp_high-basket_specific_pp_low;
-	all_PostProbsLow.row(s)  = basket_specific_pp_low
-    all_PostMeans.row(s) = basket_specific_mn;
+	all_PostProbsLow.row(s)  = basket_specific_pp_low;
+    all_PostMeans.row(s)     = basket_specific_mn;
     
     for ( int k = 0; k < K0; k++ )
     {
